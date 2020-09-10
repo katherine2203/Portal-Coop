@@ -1,0 +1,13 @@
+applications:
+- name: CooperativaIBM-dev
+  path: ./dist/coope
+  memory: 64M
+  instances: 1
+  disk_quota: 1024M
+  force_https: true
+  routes:
+  - route: coopeibm-dev.mybluemix.net
+  buildpacks:
+   - https://github.com/cloudfoundry/staticfile-buildpack.git
+  env:
+    FORCE_HTTPS: true

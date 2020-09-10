@@ -1,0 +1,81 @@
+dist: bionic
+
+language: node_js
+node_js:
+  - "node"
+
+env:
+  -APPNAMEPROD=CooperativaIBM
+  -APPNAMEDEV=CooperativaIBM-dev
+
+# safelist
+branches:
+  only:
+  - master
+  - dev
+
+addons:
+  chrome: stable
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - dpkg
+      - google-chrome-stable
+
+cache:
+  directories:
+    - node_modules
+    
+before_install:
+  - sudo apt-get update
+  - npm install -g @angular/cli
+
+install:
+  - npm install
+#  - npm run build
+
+before_script:
+  - pwd
+  - cd scripts
+  - node init.js
+
+script:
+#  - npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+#  - npm run e2e -- --protractor-config=e2e/protractor-ci.conf.js
+  - if [ "$TRAVIS_BRANCH" = "dev" ]; then
+       ng build --progress=true;
+    fi
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+       ng build --prod --progress=true;
+    fi
+
+before_deploy:
+  - cd ..
+  - pwd
+
+deploy:
+ - space : prod
+   manifest : manifest.yml          # (optional)  Defaults to manifest.yml.
+   app_name : $APPNAMEPROD          # (optional)
+   provider : bluemixcloudfoundry
+   username : apikey
+   password : $CF_APIKEY
+   organization : cooperat@pe.ibm.com
+   region : ng                        # (optional)  [ng, eu-gb , au-syd] Defaults to US South region (ng).
+   api : https://api.ng.bluemix.net  # (optional)  Overrides region setting if specified for
+   local-dir : dist/coope
+   on :
+     branch : master
+ - space : dev
+   manifest : manifest-dev.yml      # (optional)  Defaults to manifest.yml.
+   app_name : $APPNAMEDEV           # (optional)
+   provider : bluemixcloudfoundry
+   username : apikey
+   password : $CF_APIKEY
+   organization : cooperat@pe.ibm.com
+   region : ng                        # (optional)  [ng, eu-gb , au-syd] Defaults to US South region (ng).
+   api : https://api.ng.bluemix.net  # (optional)  Overrides region setting if specified for
+   local-dir : dist/coope
+   on :
+     branch : dev
